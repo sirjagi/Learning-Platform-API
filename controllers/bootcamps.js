@@ -1,3 +1,5 @@
+const Bootcamp = require("../models/Bootcamp");
+
 // middleware functions
 
 // @desc    Get all bootcamps
@@ -19,8 +21,23 @@ exports.getBootcamp = (req, res, next) => {
 // @desc    Create new bootcamp
 // @route   POST /api/v1/bootcamps
 // @access  Private
-exports.createBootcamp = (req, res, next) => {
-  res.status(200).json({ success: true, msg: "Create new bootcamp" });
+exports.createBootcamp = async (req, res, next) => {
+  // put in the database
+  // any field not in our model does not get put in DB (MongoDB feature)
+
+  try {
+    // Mongoose method
+    const bootcamp = await Bootcamp.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: bootcamp,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+    });
+  }
 };
 
 // @desc    Update bootcamp

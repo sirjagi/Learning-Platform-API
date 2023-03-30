@@ -9,7 +9,61 @@ const Bootcamp = require("../models/Bootcamp");
 // @route   GET /api/v1/bootcamps
 // @access  Public
 exports.getBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamps = await Bootcamp.find();
+  let query;
+
+  // Copy req.Query
+  const reqQuery = { ...req.query };
+
+  // Fields to exclude (filtering)
+  // if one of the query parameters is "select" (we decide what)
+  const removeFields = ["select", "sort"];
+
+  // Loop over removeFields and delete them from reqQuery
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // console.log(reqQuery);
+
+  // Create query string
+  let queryStr = JSON.stringify(reqQuery);
+
+  // Create operators ($gt, $gte, etc)
+  // /g = global (not just the first one it finds)
+  // gt = greater than, gte = greater than or equal...
+  // "$" comes before Mongoose operations (lte, lt, etc... are Mongoose operations)
+  queryStr = queryStr.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
+
+  // console.log(queryStr);
+
+  // Finding resource
+  // we store Bootcamp.find in query variable
+  query = Bootcamp.find(JSON.parse(queryStr));
+
+  // Select Fields (if select exists in url)
+  if (req.query.select) {
+    // split wherever there's a comma and rejoin with space in b/w
+    const fields = req.query.select.split(",").join(" ");
+    // console.log(fields);
+
+    // Now, select the fields that user wants
+    query = query.select(fields);
+  }
+
+  // Sort (if field present)
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    query = query.sort(sortBy);
+  }
+  // default sort by date
+  else {
+    // createdAt is a field in our Model
+    query = query.sort("-createdAt");
+  }
+
+  // Executing query
+  const bootcamps = await query;
 
   res.status(200).json({
     sucess: true,

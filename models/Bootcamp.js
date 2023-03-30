@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const slugify = require("slugify");
 
 // Schema
 const BootcampSchema = new mongoose.Schema({
@@ -102,6 +103,16 @@ const BootcampSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+});
+
+// Create bootcamp slug from the frame
+
+// pre runs before the operation (before document is saved)
+BootcampSchema.pre("save", function (next) {
+  // slug field of current incoming document
+  this.slug = slugify(this.name, { lower: true });
+  // next(), to let it know to move on to the next piece of middleware
+  next();
 });
 
 module.exports = mongoose.model("Bootcamp", BootcampSchema);

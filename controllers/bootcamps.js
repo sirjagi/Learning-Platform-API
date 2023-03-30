@@ -16,7 +16,8 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
   // Fields to exclude (filtering)
   // if one of the query parameters is "select" (we decide what)
-  const removeFields = ["select", "sort"];
+  // we don't want to match a field with these in a document (table)
+  const removeFields = ["select", "sort", "page", "limit"];
 
   // Loop over removeFields and delete them from reqQuery
   removeFields.forEach((param) => delete reqQuery[param]);
@@ -62,12 +63,42 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
     query = query.sort("-createdAt");
   }
 
+  // Pagination
+  // 10 is the base of the number
+  const page = parseInt(req.query.page, 10) || 1;
+  // query results per page
+  const limit = parseInt(req.query.limit, 10) || 25;
+  const startIndex = (page - 1) * limit;
+  const endIndex = page * limit;
+  // Mongoose method
+  const total = await Bootcamp.countDocuments();
+
+  query = query.skip(startIndex).limit(limit);
+
   // Executing query
   const bootcamps = await query;
+
+  // Pagination result
+  const pagination = {};
+
+  if (endIndex < total) {
+    pagination.next = {
+      page: page + 1,
+      limit,
+    };
+  }
+
+  if (startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit,
+    };
+  }
 
   res.status(200).json({
     sucess: true,
     count: bootcamps.length,
+    pagination,
     data: bootcamps,
   });
 });

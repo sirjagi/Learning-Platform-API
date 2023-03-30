@@ -1,3 +1,5 @@
+const ErrorResponse = require("../utils/errorResponse");
+
 const Bootcamp = require("../models/Bootcamp");
 
 // middleware functions
@@ -30,9 +32,12 @@ exports.getBootcamp = async (req, res, next) => {
 
     // if valid id but not found
     if (!bootcamp) {
-      return res.status(400).json({
-        success: false,
-      });
+      return next(
+        new ErrorResponse(
+          `Bootcampt not found with id of ${req.params.id}`,
+          404
+        )
+      );
     }
 
     res.status(200).json({
@@ -41,9 +46,19 @@ exports.getBootcamp = async (req, res, next) => {
     });
   } catch (err) {
     // if invalid id format
-    res.status(400).json({
-      success: false,
-    });
+
+    // res.status(400).json({
+    //   success: false,
+    // });
+
+    // This calls the middleware?? (./middleware/error)
+    //next(err);
+
+    // next() calls the middleware
+    // a class we created
+    next(
+      new ErrorResponse(`Bootcampt not found with id of ${req.params.id}`, 404)
+    );
   }
 };
 

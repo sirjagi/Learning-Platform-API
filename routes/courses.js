@@ -1,10 +1,17 @@
 const express = require("express");
-const { getCourses } = require("../controllers/courses");
+const {
+  getCourses,
+  getCourse,
+  addCourse,
+  updateCourse,
+  deleteCourse,
+} = require("../controllers/courses");
 
 // merging url params (coming in from bootcamps)
 // ex: /bootcamps/:bootcampId/courses
 const router = express.Router({ mergeParams: true });
 
-router.route("/").get(getCourses);
+router.route("/").get(getCourses).post(addCourse);
+router.route("/:id").get(getCourse).put(updateCourse).delete(deleteCourse);
 
 module.exports = router;

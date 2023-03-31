@@ -40,7 +40,8 @@ exports.getBootcamps = asyncHandler(async (req, res, next) => {
 
   // Finding resource
   // we store Bootcamp.find in query variable
-  query = Bootcamp.find(JSON.parse(queryStr));
+  // ALSO...populate with a virtual field "courses"
+  query = Bootcamp.find(JSON.parse(queryStr)).populate("courses");
 
   // Select Fields (if select exists in url)
   if (req.query.select) {
@@ -165,13 +166,23 @@ exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/bootcamps/:id
 // @access  Private
 exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  // this will not trigger middleware (for cascade delete) in Bootcamp Model
+  // const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+
+  // Model.remove() - This method sends a remove command directly to
+  // MongoDB, no Mongoose documents are involved.Because no Mongoose
+  // documents are involved, no middleware(hooks) are executed.
+
+  const bootcamp = await Bootcamp.findById(req.params.id);
 
   if (!bootcamp) {
     return next(
       new ErrorResponse(`Bootcampt not found with id of ${req.params.id}`, 404)
     );
   }
+
+  // this will trigger the middlware in Bootcamp model
+  bootcamp.deleteOne();
 
   res.status(200).json({
     success: true,

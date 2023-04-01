@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -35,6 +36,7 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+// Middleware
 // Encrypt password using bcrypt
 UserSchema.pre("save", async function (next) {
   // takes in # of rounds (more = more secure but heavier on system)
@@ -44,5 +46,14 @@ UserSchema.pre("save", async function (next) {
 
   next();
 });
+
+// Sign JWT and return (this is a method (not middleware))
+// methods called on documents (as opposed to statics, which are called on the Model)
+UserSchema.methods.getSignedJwtToken = function () {
+  // first obj in sign is payload
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+};
 
 module.exports = mongoose.model("User", UserSchema);

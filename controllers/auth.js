@@ -21,13 +21,15 @@ exports.register = asyncHandler(async (req, res, next) => {
     role,
   });
 
-  // Create token
-  const token = user.getSignedJwtToken();
+  sendTokenResponse(user, 200, res);
 
-  res.status(200).json({
-    success: true,
-    token,
-  });
+  // Create token
+  // const token = user.getSignedJwtToken();
+
+  // res.status(200).json({
+  //   success: true,
+  //   token,
+  // });
 });
 
 // @desc    Login user
@@ -58,11 +60,40 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse("Invalid Credentials"), 401);
   }
 
+  sendTokenResponse(user, 200, res);
+
+  // Create token
+  // const token = user.getSignedJwtToken();
+
+  // res.status(200).json({
+  //   success: true,
+  //   token,
+  // });
+});
+
+// Get token from model, create cookie, and send response
+const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = user.getSignedJwtToken();
 
-  res.status(200).json({
+  const options = {
+    // specify that the time is in days
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    // only want cookie to be accessed through client-side script
+    httpOnly: true,
+  };
+
+  // when we're in production, we set the secure flag on our cookie
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+
+  // We send it...but up to client-side how they want to handle the cookie
+  // name, value, options
+  res.status(statusCode).cookie("token", token, options).json({
     success: true,
     token,
   });
-});
+};

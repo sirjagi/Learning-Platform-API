@@ -8,6 +8,10 @@ const User = require("../models/User");
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role } = req.body;
 
+  // Not validating email and password here because we already
+  // have validation within the model
+  // and gets handler by our error handler
+
   // Create user
   const user = await User.create({
     name,
@@ -16,6 +20,43 @@ exports.register = asyncHandler(async (req, res, next) => {
     password,
     role,
   });
+
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  res.status(200).json({
+    success: true,
+    token,
+  });
+});
+
+// @desc    Login user
+// @route   POST /api/v1/auth/login
+// @access  Public
+exports.login = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // Validate email and password
+  if (!email || !password) {
+    return next(new ErrorResponse("Please provide an email and password"), 400);
+  }
+
+  // Check for user
+  // include password because we need it for validation
+  // Remember: we set the "select" property of password == false
+  // so we manually have to select it here
+  const user = await User.findOne({ email }).select("+password");
+
+  if (!user) {
+    return next(new ErrorResponse("Invalid credentials"), 401);
+  }
+
+  // Check if password matches
+  const isMatch = await user.matchPassword(password);
+
+  if (!isMatch) {
+    return next(new ErrorResponse("Invalid Credentials"), 401);
+  }
 
   // Create token
   const token = user.getSignedJwtToken();

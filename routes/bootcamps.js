@@ -17,6 +17,8 @@ const courseRouter = require("./courses");
 
 const router = express.Router();
 
+const { protect } = require("../middleware/auth");
+
 // Re-route into other resource routers
 router.use("/:bootcampId/courses", courseRouter);
 
@@ -25,19 +27,22 @@ router.use("/:bootcampId/courses", courseRouter);
 // if we post a get request at this route, we call getBootcampsInRadius
 router.route("/radius/:zipcode/:distance").get(getBootcampsInRadius);
 
-router.route("/:id/photo").put(bootcampPhotoUpload);
+// add protect middleware because we want it trigger here
+router.route("/:id/photo").put(protect, bootcampPhotoUpload);
 
 // routes with path /api/v1/bootcamps
 router
   .route("/")
   .get(advancedResults(Bootcamp, "courses"), getBootcamps)
-  .post(createBootcamp);
+  .post(protect, createBootcamp);
 
 // routes with path /api/v1/bootcamps/:id
 router
   .route("/:id")
   .get(getBootcamp)
-  .put(updateBootcamp)
-  .delete(deleteBootcamp);
+  .put(protect, updateBootcamp)
+  .delete(protect, deleteBootcamp);
+
+// wherever we put "protect," user has to be logged in
 
 module.exports = router;

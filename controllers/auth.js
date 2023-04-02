@@ -97,3 +97,17 @@ const sendTokenResponse = (user, statusCode, res) => {
     token,
   });
 };
+
+// @desc    Get current logged in user
+// @route   GET /api/v1/auth/me
+// @access  Private (need a token to access this)
+exports.getMe = asyncHandler(async (req, res, next) => {
+  // since a protected route, we have access to req.user
+  // which will always be the logged in user
+  const user = await User.findById(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});

@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const sendEmail = require("../utils/sendEmail");
@@ -108,7 +109,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   // Create reset url
   const resetUrl = `${req.protocol}://${req.get(
     "host"
-  )}/api/v1/resetpassword/${resetToken}`;
+  )}/api/v1/auth/resetpassword/${resetToken}`;
 
   // if in front end, we would perhaps send a clickable Link
   // instead of telling user to send a PUT request
@@ -136,11 +137,37 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });
     return next(new ErrorResponse("Email could not be sent", 500));
   }
+});
 
-  res.status(200).json({
-    success: true,
-    data: user,
+// @desc    Reset password
+// @route   PUT /api/v1/auth/resetpassword/:resettoken
+// @access  Public
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  // Get hashed token (because hashed version is in DB)
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.resettoken)
+    .digest("hex");
+
+  // find user by resettoken
+  const user = await User.findOne({
+    resetPasswordToken,
+    // if expire date is greater than now
+    resetPasswordExpire: { $gt: Date.now() },
   });
+
+  if (!user) {
+    return next(new ErrorResponse("Invalid token", 400));
+  }
+
+  // Set new password
+  // automatically gets encrypted by our middleware
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined; // goes away
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
 });
 
 // Just a helper function

@@ -10,8 +10,8 @@ The project demonstrates how to design a **production-style backend API** with a
 
 This API supports a platform where:
 
-- **Teachers** can create and manage bootcamps and courses  
-- **Learners** can browse available bootcamps  
+- **Teachers** can create and manage bootcamps and courses
+- **Learners** can browse available bootcamps
 - Users can securely register, authenticate, and manage their accounts
 
 The system follows common **backend architecture patterns used in real web applications**, including middleware-based request handling, JWT authentication, and database modeling with Mongoose.
@@ -94,11 +94,11 @@ These layers help mitigate common web vulnerabilities and ensure safer API usage
 
 ## Security Middleware
 
-- helmet  
-- express-rate-limit  
-- express-mongo-sanitize  
-- xss-clean  
-- hpp  
+- helmet
+- express-rate-limit
+- express-mongo-sanitize
+- xss-clean
+- hpp
 
 ## Email
 
@@ -115,24 +115,35 @@ Bootcamp-API
 │   ├── auth.js
 │   ├── bootcamps.js
 │   ├── courses.js
+│   ├── reviews.js
+│   ├── users.js
 │
 ├── models
 │   ├── Bootcamp.js
 │   ├── Course.js
-│   ├── User.js
+│   ├── Review.js
+|   ├── User.js
 │
 ├── routes
 │   ├── auth.js
 │   ├── bootcamps.js
 │   ├── courses.js
+│   ├── reviews.js
+│   ├── users.js
 │
 ├── middleware
 │   ├── auth.js
 │   ├── advancedResults.js
+│   ├── async.js
+│   ├── error.js
+│   ├── logger.js
 │
 ├── config
 │
 ├── utils
+│   ├── errorResponse.js
+│   ├── geocoder.js
+│   ├── sendEmail.js
 │
 └── server.js
 ```

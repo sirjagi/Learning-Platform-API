@@ -1,4 +1,4 @@
-# DevCamper API
+# Bootcamp API
 
 > Backend API for DevCamper application, which is a bootcmap directory website
 

@@ -50,12 +50,46 @@ Supported features include:
 - Pagination
 - Result limits
 - Full-text search
+- Geolocation-based search
 
 Example query:
 
 ```
 GET /api/v1/bootcamps?sort=price&page=2&limit=10
 ```
+
+---
+
+## Geolocation Search
+
+The API supports **location-based search for bootcamps within a geographic radius**.
+
+This feature converts a zipcode into latitude and longitude using **node-geocoder**, then performs a **MongoDB geospatial query** to find nearby bootcamps.
+
+Example endpoint:
+
+```
+GET /api/v1/bootcamps/radius/:zipcode/:distance
+```
+
+Example request:
+```
+GET /api/v1/bootcamps/radius/02118/50
+```
+
+
+This request returns all bootcamps within **50 miles of the provided zipcode**.
+
+The implementation uses MongoDB's geospatial query operators:
+
+- `$geoWithin`
+- `$centerSphere`
+
+This allows efficient location-based searches for applications such as:
+
+- learning platforms
+- event discovery
+- location-based services
 
 ---
 
@@ -103,6 +137,12 @@ These layers help mitigate common web vulnerabilities and ensure safer API usage
 ## Email
 
 - **Nodemailer**
+
+## Geospatial Features
+
+- MongoDB geospatial indexing
+- Radius-based location queries
+- Zipcode to latitude/longitude conversion via node-geocoder
 
 ---
 
